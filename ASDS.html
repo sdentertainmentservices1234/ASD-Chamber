@@ -1,0 +1,38 @@
+<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ASDS config maker</title>
+<style>body{font-family:-apple-system,Segoe UI,Roboto,sans-serif;max-width:640px;margin:30px auto;padding:0 16px;color:#1a1a18;background:#f7f4ec}
+h2{color:#6b1f1f}input{width:100%;padding:10px;font-size:16px;margin:6px 0 14px;border:1px solid #d9d2c2;border-radius:6px}
+button{background:#6b1f1f;color:#fff;border:none;padding:11px 18px;border-radius:6px;font-size:15px;cursor:pointer}
+textarea{width:100%;height:90px;font-family:monospace;font-size:13px;padding:10px;border:1px solid #6b1f1f;border-radius:6px;margin-top:10px}
+.note{background:#fbf6ea;border-left:3px solid #9a7b3f;padding:10px 12px;border-radius:4px;font-size:13.5px;margin:12px 0}</style></head>
+<body>
+<h2>ASDS — make your config line</h2>
+<p>Fill these in, click Generate, then copy the line and paste it into your GitHub file (instructions below).</p>
+<label>Settings-lock password (staff cannot change settings without it)</label>
+<input id="pw" type="text" placeholder="e.g. office123">
+<label>Chamber name (prints on acknowledgment slips)</label>
+<input id="ch" type="text" placeholder="Adv. Satish A. Deshmukh">
+<label>App title shown at top (optional)</label>
+<input id="an" type="text" placeholder="ASDS">
+<label>Handover key (paste the SAME key from your Master app → Settings → Handover key)</label>
+<input id="hk" type="text" placeholder="Paste the handover key from the Master app">
+<button onclick="gen()">Generate config line</button>
+<textarea id="out" readonly placeholder="Your config line appears here"></textarea>
+<div class="note"><b>How to use it:</b><br>
+1. On GitHub, open your <b>ASDS.html</b> file → click the pencil (Edit).<br>
+2. Press Ctrl/Cmd+F in the editor, find: <code>id="bakedConfig"</code><br>
+3. You'll see <code>&gt;null&lt;</code> between the script tags. Replace the word <code>null</code> with the whole line you copied.<br>
+4. Commit changes. Wait 1 minute. Done — staff link is now configured.</div>
+<script>
+async function sha256(s){const b=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(s));return btoa(String.fromCharCode(...new Uint8Array(b)));}
+async function gen(){
+  const pw=document.getElementById("pw").value;
+  if(pw.length<4){alert("Enter a password (4+ characters).");return;}
+  const ch=document.getElementById("ch").value.trim();
+  const an=document.getElementById("an").value.trim()||"Chamber Entry";
+  const h=await sha256(pw);
+  const hk=document.getElementById("hk").value.trim();
+  const cfg={masterHash:h, chamber: ch?{advName:ch,line1:"",line2:"",address:"",contact:"",place:"Hingoli"}:null, appName:an, handoverKey:hk};
+  document.getElementById("out").value=JSON.stringify(cfg);
+}
+</script></body></html>
